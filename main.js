@@ -1,3 +1,30 @@
+// https://neos21.net/blog/2021/12/27-01.html
+class Random {
+  constructor(seed = 88675123) {
+    this.x = 123456789;
+    this.y = 362436069;
+    this.z = 521288629;
+    this.w = seed;
+  }
+  
+  // XorShift
+  next() {
+    const t = this.x ^ (this.x << 11);
+    this.x = this.y;
+    this.y = this.z;
+    this.z = this.w;
+    return this.w = (this.w ^ (this.w >>> 19)) ^ (t ^ (t >>> 8));
+  }
+  
+  // min 以上 max 以下の乱数を生成する
+  nextInt(min, max) {
+    const r = Math.abs(this.next());
+    return min + (r % (max + 1 - min));
+  }
+}
+
+var seed = 100;
+
 const app = {
   el: '#app',
 
@@ -366,7 +393,7 @@ const app = {
       let n = 0
       for(let i=0;i<this.aot[this.turn-1];i++){
         if(this.mode === "daily"){n = this.dice_table.shift()}
-        else{n = Math.floor(Math.random()*6)+1}
+        else{n = Math.floor(rng.nextInt(1,6))}
         this.dice.push({num:n})
       }
       let wc = this.workers.length
@@ -965,7 +992,7 @@ const app = {
 
     shuffle: function(array){
       for (let i = array.length - 1; i >= 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(this.rng.nextInt(0,i));
         [array[i], array[j]] = [array[j], array[i]];
       }
     },
@@ -1016,6 +1043,7 @@ const app = {
     },
 
     initGame(){
+      this.rng = new Random(seed)
       this.dice = []
       this.workers = []
       this.turn = 1
@@ -1147,7 +1175,7 @@ const app = {
         this.shuffle(this.workers_deck)
 
         for(let i=0;i<2;i++){
-          this.dice.push({num:Math.floor(Math.random()*6)+1})
+          this.dice.push({num:Math.floor(this.rng.nextInt(1,6))})
         }
       } else {
         this.initDailyData()
